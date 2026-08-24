@@ -1,0 +1,5 @@
+# 内部資料・検証素材は公開物に含めない
+research/
+lp-requirements.md
+design-spec.md
+qa-report.md
