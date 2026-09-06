@@ -847,6 +847,17 @@ table{border-collapse:collapse;width:100%}
   .hero-slide.is-on{opacity:1}
 }
 </style>
+<style id="site-motion-custom">
+.rv,.rv.in,.js .rv,.reveal,.reveal.is-visible,.reveal.visible{opacity:1;transform:none;transition:none}
+.js .tilt,.tilt.c1,.tilt.c2{opacity:1;transform:none;transition:none}
+@media(min-width:769px) and (max-width:1200px){header .hd-cta,header .hdr-cta{display:none}}
+.motion-custom-section{position:relative;isolation:isolate}
+.motion-custom-art{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:-1}
+.motion-custom-art i{position:absolute;top:30px;left:-3%;width:40%;height:120px;background:var(--accent,var(--primary,var(--brown,#718478)));opacity:.09;clip-path:polygon(0 5%,96% 0,87% 18%,100% 28%,88% 39%,97% 49%,84% 66%,99% 76%,90% 95%,0 100%)}
+.motion-custom-art i+ i{left:auto;right:-3%;top:110px;width:27%;rotate:180deg;opacity:.07}
+@media(max-width:767px){.motion-custom-art i{height:80px}.motion-custom-art i+i{top:80px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
 </head>
 <body>
 
@@ -1298,6 +1309,37 @@ table{border-collapse:collapse;width:100%}
     note.textContent = '※ これは提案用のデモページです。送信先が未設定のため送信は行われませんでした。実制作時に送信先を設定します。';
     note.style.color = '#0A0A0A';
   });
+})();
+</script>
+<script id="site-motion-custom-runtime">
+(() => {
+ const root=document.documentElement;if(root.dataset.siteMotion)return;root.dataset.siteMotion='beforward-custom';
+ const reduce=matchMedia('(prefers-reduced-motion: reduce)'),active=new Set(),seen=new WeakSet();
+ const distance=()=>innerWidth<768?24:50;
+ function play(el,right=false,delay=0){
+  if(reduce.matches||!el.animate||seen.has(el))return;seen.add(el);
+  const opacity=getComputedStyle(el).opacity;
+  const a=el.animate([{opacity:0,translate:(right?distance():-distance())+'px 0'},{opacity,translate:'0 0'}],{duration:850,delay,easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'});
+  active.add(a);a.onfinish=a.oncancel=()=>active.delete(a);
+ }
+ const sections=[...document.querySelectorAll('main section')].filter(e=>e.querySelector('h2')).slice(0,6);
+ sections.forEach(s=>{
+  s.classList.add('motion-custom-section');const art=document.createElement('div');art.className='motion-custom-art';art.setAttribute('aria-hidden','true');art.innerHTML='<i></i><i></i>';s.prepend(art);
+ });
+ const candidates=[...document.querySelectorAll('main h2, main .reveal, main .rv, main figure, .motion-custom-art')];
+ const nodes=candidates.filter(e=>!candidates.some(p=>p!==e&&p.contains(e)));
+ let io;
+ if(!reduce.matches&&'IntersectionObserver' in window){
+  io=new IntersectionObserver(entries=>entries.forEach(e=>{if(!e.isIntersecting)return;io.unobserve(e.target);
+   if(e.target.matches('.motion-custom-art')){[...e.target.children].forEach((x,i)=>play(x,i>0,i*200))}
+   else play(e.target,!!e.target.querySelector('img'),e.target.matches('h2')?100:200);
+  }),{threshold:0,rootMargin:'0px 0px -8% 0px'});nodes.forEach(el=>io.observe(el));
+ }
+ const h=document.querySelector('h1');if(h)play(h,false,160);
+ const photo=document.querySelector('.hero-media,.hero-photo,.hero-visual,.mv__main');if(photo)play(photo,true,0);
+ reduce.addEventListener('change',()=>{if(reduce.matches){active.forEach(a=>a.cancel());io?.disconnect()}});
+ document.addEventListener('focusin',()=>active.forEach(a=>a.finish()));
+ addEventListener('pagehide',()=>active.forEach(a=>a.cancel()));
 })();
 </script>
 </body>
